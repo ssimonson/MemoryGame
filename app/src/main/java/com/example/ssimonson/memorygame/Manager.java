@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Gravity;
@@ -47,15 +48,41 @@ public class Manager extends Activity {
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
    
     int turns;
+    int pairsMatched = 0;
+    int totalPairs = 0;
+    private long startTime = 0L;
+
+    private Handler customHandler = new Handler();
+    private TextView timerValue;
+    long timeInMilliseconds = 0L;
+    long timeSwapBuff = 0L;
+    long updatedTime = 0L;
    
     private TableLayout mainTable;
     private UpdateCardsHandler handler;
 
+    private Runnable updateTimerThread = new Runnable()
+    {
+        public void run()
+        {
+            timeInMilliseconds = SystemClock.uptimeMillis() - startTime;
+
+            updatedTime = timeSwapBuff + timeInMilliseconds;
+
+            int secs = (int)(updatedTime / 1000);
+            int mins = secs / 60;
+            secs = secs % 60;
+            int milliseconds = (int) (updatedTime % 1000);
+            timerValue.setText("" + mins + ":"
+                            + String.format("%02d", secs) + ":"
+                            + String.format("%3d", milliseconds));
+            customHandler.postDelayed(this, 0);
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        //getActionBar().setDisplayHomeAsUpEnabled(true);
 
         handler = new UpdateCardsHandler();
         loadImages();
@@ -63,6 +90,7 @@ public class Manager extends Activity {
 
         TextView url = ((TextView)findViewById(R.id.myWebSite));
         Linkify.addLinks(url, Linkify.WEB_URLS);
+        timerValue = (TextView) findViewById(R.id.timerValue);
 
         backImage =  getResources().getDrawable(R.drawable.icon);
 
@@ -153,7 +181,6 @@ public class Manager extends Activity {
 
         cards = new int [COL_COUNT] [ROW_COUNT];
 
-
         mainTable.removeView(findViewById(R.id.TableRow01));
         mainTable.removeView(findViewById(R.id.TableRow02));
 
@@ -167,11 +194,20 @@ public class Manager extends Activity {
             mainTable.addView(createRow(y));
         }
 
+        turns=0;
+        pairsMatched = 0;
+        totalPairs = 0;
+        startTime = 0L;
+        timeInMilliseconds = 0L;
+        timeSwapBuff = 0L;
+        updatedTime = 0L;
         firstCard=null;
+
         loadCards();
 
-        turns=0;
+
         ((TextView)findViewById(R.id.tv1)).setText("Tries: "+turns);
+        ((TextView)findViewById(R.id.timerValue)).setText("00:00:00");
     }
 
     private void loadImages() {
@@ -206,6 +242,7 @@ public class Manager extends Activity {
         try{
             int size = ROW_COUNT*COL_COUNT;
             int cardSize = getResources().getInteger(R.integer.defaultCardsCount);
+            totalPairs = size / 2;
 
             int randomNum = 0;
 
@@ -215,24 +252,11 @@ public class Manager extends Activity {
 
             ArrayList<Integer> randomCards = new ArrayList<Integer>();
 
-            Random r = new Random();
-
-            /*for(int i=0;i<size/2;i++)
-            {
-                randomNum = r.nextInt(cardSize) + 1;
-
-                randomCards.add(randomNum);
-            }*/
-
-            Random rng = new Random(); // Ideally just create one instance globally
-            // Note: use LinkedHashSet to maintain insertion order
-            //Set<Integer> generated = new LinkedHashSet<Integer>();
+            Random rng = new Random();
 
             while (randomCards.size() < size/2)
             {
-                Integer next = rng.nextInt(cardSize) + 1;
-                // As we're adding to a set, this will automatically do a containment check
-                //generated.add(next);
+                Integer next = rng.nextInt(cardSize-1) + 1;
                 randomCards.add(next);
             }
 
@@ -244,7 +268,7 @@ public class Manager extends Activity {
                 int t=0;
 
                 if(i>0){
-                    t = r.nextInt(i);
+                    t = rng.nextInt(i);
                 }
 
                 t=listofAvaiableCards.remove(t);
@@ -297,6 +321,12 @@ public class Manager extends Activity {
                 int x = id/100;
                 int y = id%100;
                 turnCard((Button)v,x,y);
+                if(firstCard!=null && startTime == 0)
+                {
+                    findViewById(R.id.timerValue).setVisibility(View.VISIBLE);
+                    startTime = SystemClock.uptimeMillis();
+                    customHandler.postDelayed(updateTimerThread,0);
+                }
             }
         }
 
@@ -322,7 +352,6 @@ public class Manager extends Activity {
 
                 turns++;
                 ((TextView)findViewById(R.id.tv1)).setText("Tries: "+turns);
-
 
                 TimerTask tt = new TimerTask() {
 
@@ -357,6 +386,11 @@ public class Manager extends Activity {
             if(cards[secondCard.x][secondCard.y] == cards[firstCard.x][firstCard.y]){
                 firstCard.button.setVisibility(View.INVISIBLE);
                 secondCard.button.setVisibility(View.INVISIBLE);
+                pairsMatched++;
+                if (pairsMatched == totalPairs)
+                {
+                    customHandler.removeCallbacks(updateTimerThread);
+                }
             }
             else {
                 if(currentApiVersion<16) {
