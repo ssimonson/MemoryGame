@@ -8,14 +8,25 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".Manager"
-            android:label="@string/app_name" >
+            android:name=".newGame"
+            android:label="@string/title_activity_new_game" >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".Manager"
+            android:label="@string/app_name"
+            android:parentActivityName=".newGame" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.ssimonson.memorygame.Manager" />
+        </activity>
+
         <activity
             android:name=".HighScores"
             android:label="@string/title_activity_high_scores"
@@ -24,6 +35,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.ssimonson.memorygame.Manager" />
         </activity>
+
     </application>
 
 </manifest>

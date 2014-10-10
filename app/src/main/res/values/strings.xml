@@ -16,10 +16,17 @@
         <item>6 X 6</item>
     </string-array>
 
+    <string-array name="theme">
+        <item>Select a Theme</item>
+        <item>Food</item>
+    </string-array>
+
     <string name="title_activity_high_scores">High Scores</string>
     <string name="hello_world">Hello world!</string>
     <string name="reset_high_scores">Reset High Scores</string>
     <string name="reset_high_scores_confirmation_title">Are you sure you want to reset all of the high scores?</string>
     <string name="reset_high_scores_confirmation">All recorded scores will be erased.</string>
+    <string name="title_activity_new_game">New Game</string>
+    <string name="start">Start</string>
 
 </resources>

@@ -16,11 +16,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -61,10 +57,8 @@ public class Manager extends Activity {
     private TableLayout mainTable;
     private UpdateCardsHandler handler;
 
-    private Runnable updateTimerThread = new Runnable()
-    {
-        public void run()
-        {
+    private Runnable updateTimerThread = new Runnable() {
+        public void run() {
             timeInMilliseconds = SystemClock.uptimeMillis() - startTime;
 
             updatedTime = timeSwapBuff + timeInMilliseconds;
@@ -89,8 +83,14 @@ public class Manager extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Intent intent = getIntent();
+
+        String theme = intent.getStringExtra("theme");
+        ROW_COUNT  = intent.getIntExtra("rows",4);
+        COL_COUNT = intent.getIntExtra("columns",4);
+
         handler = new UpdateCardsHandler();
-        loadImages();
+        loadImages(theme);
         setContentView(R.layout.main);
 
         TextView url = ((TextView) findViewById(R.id.myWebSite));
@@ -104,6 +104,8 @@ public class Manager extends Activity {
         mainTable = (TableLayout) findViewById(R.id.TableLayout03);
 
         context = mainTable.getContext();
+
+        newGame();
     }
 
     @Override
@@ -140,63 +142,11 @@ public class Manager extends Activity {
     }
 
     private void SelectNewGame() {
-        Spinner s = (Spinner) findViewById(R.id.Spinner01);
-        s.setVisibility(View.VISIBLE);
-        ArrayAdapter adapter = ArrayAdapter.createFromResource(
-                this, R.array.type, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        s.setAdapter(adapter);
-
-        s.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-            @Override
-            public void onItemSelected(
-                    android.widget.AdapterView<?> arg0,
-                    View arg1, int pos, long arg3) {
-
-                ((Spinner) findViewById(R.id.Spinner01)).setSelection(0);
-
-                int x, y;
-
-                switch (pos) {
-                    case 1:
-                        x = 4;
-                        y = 4;
-                        break;
-                    case 2:
-                        x = 4;
-                        y = 5;
-                        break;
-                    case 3:
-                        x = 4;
-                        y = 6;
-                        break;
-                    case 4:
-                        x = 5;
-                        y = 6;
-                        break;
-                    case 5:
-                        x = 6;
-                        y = 6;
-                        break;
-                    default:
-                        return;
-                }
-                newGame(x, y);
-                (findViewById(R.id.Spinner01)).setVisibility(View.INVISIBLE);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-
-            }
-        });
+        Intent intent = new Intent(getBaseContext(),newGame.class);
+        startActivity(intent);
     }
 
-    private void newGame(int c, int r) {
-        ROW_COUNT = r;
-        COL_COUNT = c;
+    private void newGame() {
 
         cards = new int[COL_COUNT][ROW_COUNT];
 
@@ -233,7 +183,7 @@ public class Manager extends Activity {
         ((TextView) findViewById(R.id.timerValue)).setText("");
     }
 
-    private void loadImages() {
+    private void loadImages(String theme) {
         images = new ArrayList<Drawable>();
 
         images.add(getResources().getDrawable(R.drawable.card1));

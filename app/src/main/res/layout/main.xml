@@ -9,20 +9,6 @@
 <TableRow
     android:id="@+id/TableRow04"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:gravity="center">
-
-    <Spinner xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/Spinner01"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:visibility="invisible" />
-</TableRow>
-
-<TableRow
-    android:id="@+id/TableRow05"
-    android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
     <TextView
