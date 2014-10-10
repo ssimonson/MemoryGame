@@ -19,6 +19,8 @@
     <string-array name="theme">
         <item>Select a Theme</item>
         <item>Food</item>
+        <item>Cars</item>
+        <item>Flags</item>
     </string-array>
 
     <string name="title_activity_high_scores">High Scores</string>
