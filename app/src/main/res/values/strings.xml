@@ -4,7 +4,9 @@
     <string name="app_name">Memory Game</string>
     <string name="timerVal">00:00:00</string>
     <string name="new_game">New Game</string>
+    <string name="high_scores">High Scores</string>
     <string name="action_settings">Settings</string>
+
     <string-array name="type">
         <item>New Game</item>
         <item>4 X 4</item>
@@ -13,4 +15,11 @@
         <item>5 X 6</item>
         <item>6 X 6</item>
     </string-array>
+
+    <string name="title_activity_high_scores">High Scores</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="reset_high_scores">Reset High Scores</string>
+    <string name="reset_high_scores_confirmation_title">Are you sure you want to reset all of the high scores?</string>
+    <string name="reset_high_scores_confirmation">All recorded scores will be erased.</string>
+
 </resources>
