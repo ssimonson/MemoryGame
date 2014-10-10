@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.ssimonson.memorygame.HighScores" >
+    <item
+        android:id="@+id/action_reset"
+        android:icon="@drawable/reset"
+        android:title="@string/reset_high_scores"
+        android:showAsAction="ifRoom" />
+</menu>
