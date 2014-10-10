@@ -5,6 +5,10 @@
         android:icon="@drawable/new_game"
         android:title="@string/new_game"
         android:showAsAction="ifRoom" />
+    <item android:id="@+id/action_highScores"
+        android:icon="@drawable/ribbon_1"
+        android:title="@string/high_scores"
+        android:showAsAction="ifRoom" />
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"

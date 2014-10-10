@@ -1,15 +1,8 @@
 package com.example.ssimonson.memorygame;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,45 +12,52 @@ import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Manager extends Activity {
     private static int ROW_COUNT = -1;
     private static int COL_COUNT = -1;
     private Context context;
     private Drawable backImage;
-    private int [] [] cards;
+    private int[][] cards;
     private List<Drawable> images;
     private Card firstCard;
     private Card secondCard;
     private ButtonListener buttonListener;
 
     protected static Object lock = new Object();
-    
+
     private int currentApiVersion = android.os.Build.VERSION.SDK_INT;
-   
+
     int turns;
     int pairsMatched = 0;
     int totalPairs = 0;
-    private long startTime = 0L;
 
     private Handler customHandler = new Handler();
     private TextView timerValue;
     long timeInMilliseconds = 0L;
     long timeSwapBuff = 0L;
     long updatedTime = 0L;
-   
+
+    long startTime;
+
     private TableLayout mainTable;
     private UpdateCardsHandler handler;
 
@@ -69,16 +69,21 @@ public class Manager extends Activity {
 
             updatedTime = timeSwapBuff + timeInMilliseconds;
 
-            int secs = (int)(updatedTime / 1000);
-            int mins = secs / 60;
-            secs = secs % 60;
-            int milliseconds = (int) (updatedTime % 1000);
-            timerValue.setText("" + mins + ":"
-                            + String.format("%02d", secs) + ":"
-                            + String.format("%3d", milliseconds));
+            timerValue.setText(formatTime(updatedTime));
             customHandler.postDelayed(this, 0);
         }
     };
+
+    public static String formatTime(long timeInMilliseconds) {
+        int secs = (int) (timeInMilliseconds / 1000);
+        int mins = secs / 60;
+        secs = secs % 60;
+        int milliseconds = (int) (timeInMilliseconds % 1000);
+
+        return "" + mins + ":"
+                + String.format("%02d", secs) + ":"
+                + String.format("%3d", milliseconds);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,17 +93,17 @@ public class Manager extends Activity {
         loadImages();
         setContentView(R.layout.main);
 
-        TextView url = ((TextView)findViewById(R.id.myWebSite));
+        TextView url = ((TextView) findViewById(R.id.myWebSite));
         Linkify.addLinks(url, Linkify.WEB_URLS);
         timerValue = (TextView) findViewById(R.id.timerValue);
 
-        backImage =  getResources().getDrawable(R.drawable.icon);
+        backImage = getResources().getDrawable(R.drawable.icon);
 
         buttonListener = new ButtonListener();
 
-        mainTable = (TableLayout)findViewById(R.id.TableLayout03);
+        mainTable = (TableLayout) findViewById(R.id.TableLayout03);
 
-        context  = mainTable.getContext();
+        context = mainTable.getContext();
     }
 
     @Override
@@ -116,6 +121,9 @@ public class Manager extends Activity {
             case R.id.action_newGame:
                 SelectNewGame();
                 return true;
+            case R.id.action_highScores:
+                ShowHighScores();
+                return true;
             case R.id.action_settings:
                 //openSettings();
                 return true;
@@ -124,8 +132,14 @@ public class Manager extends Activity {
         }
     }
 
-    private void SelectNewGame()
-    {
+    private void ShowHighScores() {
+        Intent myIntent = new Intent(getBaseContext(), HighScores.class);
+        myIntent.putExtra("size", "4 x 4"); //Optional parameters
+        myIntent.putExtra("type", "turns"); //Optional parameters
+        startActivity(myIntent);
+    }
+
+    private void SelectNewGame() {
         Spinner s = (Spinner) findViewById(R.id.Spinner01);
         s.setVisibility(View.VISIBLE);
         ArrayAdapter adapter = ArrayAdapter.createFromResource(
@@ -133,37 +147,42 @@ public class Manager extends Activity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         s.setAdapter(adapter);
 
-        s.setOnItemSelectedListener(new OnItemSelectedListener(){
+        s.setOnItemSelectedListener(new OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(
                     android.widget.AdapterView<?> arg0,
-                    View arg1, int pos, long arg3){
+                    View arg1, int pos, long arg3) {
 
                 ((Spinner) findViewById(R.id.Spinner01)).setSelection(0);
 
-                int x,y;
+                int x, y;
 
                 switch (pos) {
                     case 1:
-                        x=4;y=4;
+                        x = 4;
+                        y = 4;
                         break;
                     case 2:
-                        x=4;y=5;
+                        x = 4;
+                        y = 5;
                         break;
                     case 3:
-                        x=4;y=6;
+                        x = 4;
+                        y = 6;
                         break;
                     case 4:
-                        x=5;y=6;
+                        x = 5;
+                        y = 6;
                         break;
                     case 5:
-                        x=6;y=6;
+                        x = 6;
+                        y = 6;
                         break;
                     default:
                         return;
                 }
-                newGame(x,y);
+                newGame(x, y);
                 (findViewById(R.id.Spinner01)).setVisibility(View.INVISIBLE);
             }
 
@@ -179,12 +198,12 @@ public class Manager extends Activity {
         ROW_COUNT = r;
         COL_COUNT = c;
 
-        cards = new int [COL_COUNT] [ROW_COUNT];
+        cards = new int[COL_COUNT][ROW_COUNT];
 
         mainTable.removeView(findViewById(R.id.TableRow01));
         mainTable.removeView(findViewById(R.id.TableRow02));
 
-        TableRow tr = ((TableRow)findViewById(R.id.TableRow03));
+        TableRow tr = ((TableRow) findViewById(R.id.TableRow03));
         tr.removeAllViews();
 
         mainTable = new TableLayout(context);
@@ -201,13 +220,18 @@ public class Manager extends Activity {
         timeInMilliseconds = 0L;
         timeSwapBuff = 0L;
         updatedTime = 0L;
-        firstCard=null;
+        firstCard = null;
 
         loadCards();
 
-
-        ((TextView)findViewById(R.id.tv1)).setText("Tries: "+turns);
+        ((TextView) findViewById(R.id.tv1)).setText("Tries: " + turns);
         ((TextView)findViewById(R.id.timerValue)).setText("00:00:00");
+        startTime = System.currentTimeMillis();
+    }
+
+    private void gameOver() {
+        ((TextView) findViewById(R.id.tv1)).setText("You completed the " + COL_COUNT + " x " + ROW_COUNT + " game in " + formatTime(updatedTime) + " and " + Integer.toString(turns) + "turns");
+        ((TextView) findViewById(R.id.timerValue)).setText("");
     }
 
     private void loadImages() {
@@ -237,75 +261,82 @@ public class Manager extends Activity {
 
     }
 
-    private void loadCards(){
+    private void loadCards() {
 
-        try{
-            int size = ROW_COUNT*COL_COUNT;
+        try {
+            int size = ROW_COUNT * COL_COUNT;
             int cardSize = getResources().getInteger(R.integer.defaultCardsCount);
             totalPairs = size / 2;
 
             int randomNum = 0;
 
-            Log.i("loadCards()","size=" + size);
+            Log.i("loadCards()", "size=" + size);
 
             ArrayList<Integer> listofAvaiableCards = new ArrayList<Integer>();
 
+            ArrayList<Integer> allCards = new ArrayList<Integer>();
             ArrayList<Integer> randomCards = new ArrayList<Integer>();
 
-            Random rng = new Random();
-
-            while (randomCards.size() < size/2)
-            {
-                Integer next = rng.nextInt(cardSize-1) + 1;
-                randomCards.add(next);
+            for (int i = 0; i < cardSize; i++) {
+                allCards.add(i);
             }
 
-            for(int i=0;i<size;i++){
+            Random r = new Random();
+
+            for (int i = 0; i < size / 2; i++) {
+                randomNum = r.nextInt(allCards.size());
+
+                randomCards.add(allCards.remove(randomNum));
+            }
+
+            for (int i = 0; i < size; i++) {
                 listofAvaiableCards.add(i);
             }
 
-            for(int i=size-1;i>=0;i--){
-                int t=0;
+            for (int i = size - 1; i >= 0; i--) {
+                int t = 0;
 
-                if(i>0){
-                    t = rng.nextInt(i);
+                if (i > 0) {
+                    t = r.nextInt(i);
                 }
 
-                t=listofAvaiableCards.remove(t);
+                t = listofAvaiableCards.remove(t);
 
-               cards[i%COL_COUNT][i/COL_COUNT]=randomCards.get(t%(size/2));
+                cards[i % COL_COUNT][i / COL_COUNT] = randomCards.get(t % (size / 2));
 
-                Log.i("loadCards()", "card["+(i%COL_COUNT)+
-                        "]["+(i/COL_COUNT)+"]=" + cards[i%COL_COUNT][i/COL_COUNT]);
+                Log.i("loadCards()", "card[" + (i % COL_COUNT) +
+                        "][" + (i / COL_COUNT) + "]=" + cards[i % COL_COUNT][i / COL_COUNT]);
             }
-        }
-        catch (Exception e) {
-            Log.e("loadCards()", e+"");
+        } catch (Exception e) {
+            Log.e("loadCards()", e + "");
         }
     }
 
-    private TableRow createRow(int y){
+    private TableRow createRow(int y) {
         TableRow row = new TableRow(context);
         row.setHorizontalGravity(Gravity.CENTER);
 
         for (int x = 0; x < COL_COUNT; x++) {
-            row.addView(createImageButton(x,y));
+            row.addView(createImageButton(x, y));
         }
         return row;
     }
 
-    private View createImageButton(int x, int y){
+    private View createImageButton(int x, int y) {
         Button button = new Button(context);
-        if(currentApiVersion < 16)
-        {
+        if (currentApiVersion < 16) {
             button.setBackgroundDrawable(backImage);
-        }
-        else {
+        } else {
             button.setBackground(backImage);
         }
-        button.setId(100*x+y);
+        button.setId(100 * x + y);
         button.setOnClickListener(buttonListener);
         return button;
+    }
+
+    private void saveScore(Score score) {
+        DatabaseHandler db = new DatabaseHandler(this);
+        db.addScore(score);
     }
 
     class ButtonListener implements OnClickListener {
@@ -314,13 +345,13 @@ public class Manager extends Activity {
         public void onClick(View v) {
 
             synchronized (lock) {
-                if(firstCard!=null && secondCard != null){
+                if (firstCard != null && secondCard != null) {
                     return;
                 }
                 int id = v.getId();
-                int x = id/100;
-                int y = id%100;
-                turnCard((Button)v,x,y);
+                int x = id / 100;
+                int y = id % 100;
+                turnCard((Button) v, x, y);
                 if(firstCard!=null && startTime == 0)
                 {
                     findViewById(R.id.timerValue).setVisibility(View.VISIBLE);
@@ -330,39 +361,35 @@ public class Manager extends Activity {
             }
         }
 
-        private void turnCard(Button button,int x, int y) {
-            if(currentApiVersion<16)
-            {
+        private void turnCard(Button button, int x, int y) {
+            if (currentApiVersion < 16) {
                 button.setBackgroundDrawable(images.get(cards[x][y]));
-            }
-            else {
+            } else {
                 button.setBackground(images.get(cards[x][y]));
             }
 
-            if(firstCard==null){
-                firstCard = new Card(button,x,y);
-            }
-            else{
+            if (firstCard == null) {
+                firstCard = new Card(button, x, y);
+            } else {
 
-                if(firstCard.x == x && firstCard.y == y){
+                if (firstCard.x == x && firstCard.y == y) {
                     return; //the user pressed the same card
                 }
 
-                secondCard = new Card(button,x,y);
+                secondCard = new Card(button, x, y);
 
                 turns++;
-                ((TextView)findViewById(R.id.tv1)).setText("Tries: "+turns);
+                ((TextView) findViewById(R.id.tv1)).setText("Tries: " + turns);
 
                 TimerTask tt = new TimerTask() {
 
                     @Override
                     public void run() {
-                        try{
+                        try {
                             synchronized (lock) {
                                 handler.sendEmptyMessage(0);
                             }
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             Log.e("E1", e.getMessage());
                         }
                     }
@@ -374,7 +401,7 @@ public class Manager extends Activity {
         }
     }
 
-    class UpdateCardsHandler extends Handler{
+    class UpdateCardsHandler extends Handler {
 
         @Override
         public void handleMessage(Message msg) {
@@ -382,29 +409,29 @@ public class Manager extends Activity {
                 checkCards();
             }
         }
-        public void checkCards(){
-            if(cards[secondCard.x][secondCard.y] == cards[firstCard.x][firstCard.y]){
+
+        public void checkCards() {
+            if (cards[secondCard.x][secondCard.y] == cards[firstCard.x][firstCard.y]) {
                 firstCard.button.setVisibility(View.INVISIBLE);
                 secondCard.button.setVisibility(View.INVISIBLE);
                 pairsMatched++;
                 if (pairsMatched == totalPairs)
                 {
                     customHandler.removeCallbacks(updateTimerThread);
+                    saveScore(new Score("", "" + COL_COUNT + " x " + ROW_COUNT, (int)updatedTime, turns));
+                    gameOver();
                 }
-            }
-            else {
-                if(currentApiVersion<16) {
+                if (currentApiVersion < 16) {
                     secondCard.button.setBackgroundDrawable(backImage);
                     firstCard.button.setBackgroundDrawable(backImage);
-                }
-                else {
+                } else {
                     secondCard.button.setBackground(backImage);
                     firstCard.button.setBackground(backImage);
                 }
             }
 
-            firstCard=null;
-            secondCard=null;
+            firstCard = null;
+            secondCard = null;
         }
     }
 }
