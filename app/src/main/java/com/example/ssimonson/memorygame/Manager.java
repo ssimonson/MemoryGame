@@ -1,13 +1,16 @@
 package com.example.ssimonson.memorygame;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
+import android.text.InputType;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Gravity;
@@ -17,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -180,8 +184,20 @@ public class Manager extends Activity {
     }
 
     private void gameOver() {
-        ((TextView) findViewById(R.id.tv1)).setText("You completed the " + COL_COUNT + " x " + ROW_COUNT + " game in " + formatTime(updatedTime) + " and " + Integer.toString(turns) + "turns");
+        ((TextView) findViewById(R.id.tv1)).setText("You completed the " + COL_COUNT + " x " + ROW_COUNT + " game in " + formatTime(updatedTime) + " and " + Integer.toString(turns) + " turns");
         ((TextView) findViewById(R.id.timerValue)).setText("");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+        new AlertDialog.Builder(Manager.this)
+                .setMessage("Enter your name")
+                .setView(input)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        String name = input.getText().toString();
+                        saveScore(new Score(name, "" + COL_COUNT + " X " + ROW_COUNT, (int) updatedTime, turns));
+                    }
+                }).show();
     }
 
     private void loadImages(ArrayList<Integer> randomCards) {
@@ -353,7 +369,6 @@ public class Manager extends Activity {
                 pairsMatched++;
                 if (pairsMatched == totalPairs) {
                     customHandler.removeCallbacks(updateTimerThread);
-                    saveScore(new Score("", "" + COL_COUNT + " x " + ROW_COUNT, (int) updatedTime, turns));
                     gameOver();
                 }
             } else {

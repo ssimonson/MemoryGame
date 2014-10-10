@@ -30,10 +30,10 @@
         <activity
             android:name=".HighScores"
             android:label="@string/title_activity_high_scores"
-            android:parentActivityName=".Manager" >
+            android:parentActivityName=".newGame" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.ssimonson.memorygame.Manager" />
+                android:value="com.example.ssimonson.memorygame.newGame" />
         </activity>
 
     </application>

@@ -86,10 +86,23 @@ public class newGame extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_highScores:
+                ShowHighScores();
+                return true;
+            case R.id.action_settings:
+                //openSettings();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+    }
+
+    private void ShowHighScores() {
+        Intent myIntent = new Intent(getBaseContext(), HighScores.class);
+        myIntent.putExtra("size", "4 x 4"); //Optional parameters
+        myIntent.putExtra("type", "turns"); //Optional parameters
+        startActivity(myIntent);
     }
 
     public void startGame(View view)

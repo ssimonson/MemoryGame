@@ -2,9 +2,13 @@ package com.example.ssimonson.memorygame;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -14,78 +18,82 @@ import java.util.List;
 
 public class HighScores extends Activity {
 
+    DatabaseHandler db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_high_scores);
-        TableLayout highScores = ((TableLayout)findViewById(R.id.highScoreTable));
 
+        db = new DatabaseHandler(this);
         loadHighScores();
     }
 
     public void loadHighScores() {
-        DatabaseHandler db = new DatabaseHandler(this);
-        List<Score> scores = db.getAllScores();
 
-        TableLayout highScoreTable = (TableLayout) findViewById(R.id.highScoreTable);
+        LinearLayout highScoreList = ((LinearLayout) findViewById(R.id.highScoreList));
+        highScoreList.removeAllViews();
 
-        highScoreTable.removeAllViews();
+        String[] sizes = getResources().getStringArray(R.array.type);
 
-        TableRow header = new TableRow(this);
-        TableRow.LayoutParams headerLP = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
-        header.setLayoutParams(headerLP);
+        for (int s = 0; s < sizes.length; s++) {
+            if(sizes[s].equals("New Game")) {
+                continue;
+            }
+            List<Score> scores = db.getAllScores(sizes[s], "tries");
 
-        TextView headerName = new TextView(this);
-        headerName.setText("Name");
-        headerName.setPadding(5, 5, 5, 5);
-        header.addView(headerName);
+            TextView tv = new TextView(this);
+            tv.setText(sizes[s]);
+            tv.setTextSize(15);
+            tv.setGravity(Gravity.CENTER);
+            highScoreList.addView(tv);
 
-        TextView headerSize = new TextView(this);
-        headerSize.setText("Size");
-        headerSize.setPadding(5, 5, 5, 5);
-        header.addView(headerSize);
+            TableLayout tl = new TableLayout(this);
+            TableLayout.LayoutParams tllp = new TableLayout.LayoutParams();
+            tllp.gravity=Gravity.CENTER_HORIZONTAL;
+            tllp.width=TableLayout.LayoutParams.WRAP_CONTENT;
+            tllp.bottomMargin=10;
 
-        TextView headerTurns = new TextView(this);
-        headerTurns.setText("Turns");
-        headerTurns.setPadding(5, 5, 5, 5);
-        header.addView(headerTurns);
+            tl.setLayoutParams(tllp);
+            tl.addView(createHighScoreRow("Name", "Size", "Turns", "Time"));
 
-        TextView headerTime = new TextView(this);
-        headerTime.setText("Time");
-        headerTime.setPadding(5, 5, 5, 5);
-        header.addView(headerTime);
-
-        highScoreTable.addView(header);
-
-
-        for (int i = 0; i < scores.size(); i++) {
-            Score score = scores.get(i);
-
-            TableRow row = new TableRow(this);
-            TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
-            row.setLayoutParams(lp);
-            TextView name = new TextView(this);
-            name.setText(score.getName());
-            name.setPadding(5, 5, 5, 5);
-            row.addView(name);
-
-            TextView size = new TextView(this);
-            size.setText(score.getSize());
-            size.setPadding(5, 5, 5, 5);
-            row.addView(size);
-
-            TextView turns = new TextView(this);
-            turns.setText(Integer.toString(score.getTries()));
-            turns.setPadding(5, 5, 5, 5);
-            row.addView(turns);
-
-            TextView time = new TextView(this);
-            time.setText(Manager.formatTime(score.getTime()));
-            time.setPadding(5, 5, 5, 5);
-            row.addView(time);
-
-            highScoreTable.addView(row);
+            for (int i = 0; i < scores.size(); i++) {
+                Score score = scores.get(i);
+                tl.addView(createHighScoreRow(score.getName(), score.getSize(), score.getTries(), score.getTime()));
+            }
+            highScoreList.addView(tl);
         }
+    }
+
+    private TableRow createHighScoreRow(String name, String size, int tries, int time) {
+        return createHighScoreRow(name, size, Integer.toString(tries), Manager.formatTime(time));
+    }
+
+    private TableRow createHighScoreRow(String name, String size, String tries, String time) {
+        TableRow row = new TableRow(this);
+        TableRow.LayoutParams lp = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT);
+        row.setLayoutParams(lp);
+        TextView rname = new TextView(this);
+        rname.setText(name);
+        rname.setPadding(5, 5, 5, 5);
+        row.addView(rname);
+
+        TextView rsize = new TextView(this);
+        rsize.setText(size);
+        rsize.setPadding(5, 5, 5, 5);
+        row.addView(rsize);
+
+        TextView rtries = new TextView(this);
+        rtries.setText(tries);
+        rtries.setPadding(5, 5, 5, 5);
+        row.addView(rtries);
+
+        TextView rtime = new TextView(this);
+        rtime.setText(time);
+        rtime.setPadding(5, 5, 5, 5);
+        row.addView(rtime);
+
+        return row;
     }
 
     @Override
@@ -109,15 +117,30 @@ public class HighScores extends Activity {
     }
 
     private void resetHighScores() {
-        //AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.reset_high_scores_confirmation_title)
+                .setMessage(R.string.reset_high_scores_confirmation)
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener)
+                .show();
 
-        //builder.setMessage(R.string.reset_high_scores_confirmation)
-        //        .setTitle(R.string.reset_high_scores_confirmation_title);
-
-        //AlertDialog dialog = builder.create();
-
-        DatabaseHandler db = new DatabaseHandler(this);
-        db.deleteAllScores();
-        loadHighScores();
     }
+
+    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    //Yes button clicked
+                    db.deleteAllScores();
+                    loadHighScores();
+                    break;
+
+                case DialogInterface.BUTTON_NEGATIVE:
+                    //No button clicked
+                    break;
+            }
+        }
+    };
+
 }
