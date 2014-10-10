@@ -37,6 +37,7 @@ public class Manager extends Activity {
     private Card firstCard;
     private Card secondCard;
     private ButtonListener buttonListener;
+    private String theme;
 
     protected static Object lock = new Object();
 
@@ -85,12 +86,12 @@ public class Manager extends Activity {
 
         Intent intent = getIntent();
 
-        String theme = intent.getStringExtra("theme");
+        theme = intent.getStringExtra("theme").toLowerCase();
         ROW_COUNT  = intent.getIntExtra("rows",4);
         COL_COUNT = intent.getIntExtra("columns",4);
 
         handler = new UpdateCardsHandler();
-        loadImages(theme);
+        //loadImages(theme);
         setContentView(R.layout.main);
 
         TextView url = ((TextView) findViewById(R.id.myWebSite));
@@ -183,31 +184,13 @@ public class Manager extends Activity {
         ((TextView) findViewById(R.id.timerValue)).setText("");
     }
 
-    private void loadImages(String theme) {
+    private void loadImages(ArrayList<Integer> randomCards) {
         images = new ArrayList<Drawable>();
 
-        images.add(getResources().getDrawable(R.drawable.card1));
-        images.add(getResources().getDrawable(R.drawable.card2));
-        images.add(getResources().getDrawable(R.drawable.card3));
-        images.add(getResources().getDrawable(R.drawable.card4));
-        images.add(getResources().getDrawable(R.drawable.card5));
-        images.add(getResources().getDrawable(R.drawable.card6));
-        images.add(getResources().getDrawable(R.drawable.card7));
-        images.add(getResources().getDrawable(R.drawable.card8));
-        images.add(getResources().getDrawable(R.drawable.card9));
-        images.add(getResources().getDrawable(R.drawable.card10));
-        images.add(getResources().getDrawable(R.drawable.card11));
-        images.add(getResources().getDrawable(R.drawable.card12));
-        images.add(getResources().getDrawable(R.drawable.card13));
-        images.add(getResources().getDrawable(R.drawable.card14));
-        images.add(getResources().getDrawable(R.drawable.card15));
-        images.add(getResources().getDrawable(R.drawable.card16));
-        images.add(getResources().getDrawable(R.drawable.card17));
-        images.add(getResources().getDrawable(R.drawable.card18));
-        images.add(getResources().getDrawable(R.drawable.card19));
-        images.add(getResources().getDrawable(R.drawable.card20));
-        images.add(getResources().getDrawable(R.drawable.card21));
-
+        for(int i = 0; i < randomCards.size(); i++)
+        {
+            images.add(getResources().getDrawable(getResources().getIdentifier(theme + "_card_" + randomCards.get(i),"drawable",getPackageName())));
+        }
     }
 
     private void loadCards() {
@@ -226,7 +209,7 @@ public class Manager extends Activity {
             ArrayList<Integer> allCards = new ArrayList<Integer>();
             ArrayList<Integer> randomCards = new ArrayList<Integer>();
 
-            for (int i = 0; i < cardSize; i++) {
+            for (int i = 1; i <= cardSize; i++) {
                 allCards.add(i);
             }
 
@@ -251,11 +234,15 @@ public class Manager extends Activity {
 
                 t = listofAvaiableCards.remove(t);
 
-                cards[i % COL_COUNT][i / COL_COUNT] = randomCards.get(t % (size / 2));
+                int randomCardsIndex = randomCards.indexOf(randomCards.get(t%(size/2)));
+
+                cards[i % COL_COUNT][i / COL_COUNT] = randomCardsIndex;
 
                 Log.i("loadCards()", "card[" + (i % COL_COUNT) +
                         "][" + (i / COL_COUNT) + "]=" + cards[i % COL_COUNT][i / COL_COUNT]);
             }
+
+            loadImages(randomCards);
         } catch (Exception e) {
             Log.e("loadCards()", e + "");
         }

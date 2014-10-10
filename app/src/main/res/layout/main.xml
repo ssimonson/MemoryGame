@@ -86,7 +86,7 @@
             android:id="@+id/ImageView01"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/card1"
+            android:background="@drawable/food_card_1"
             android:layout_gravity="center">
         </ImageView>
     </LinearLayout>
