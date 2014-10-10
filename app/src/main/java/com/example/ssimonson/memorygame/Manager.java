@@ -56,7 +56,7 @@ public class Manager extends Activity {
     long timeSwapBuff = 0L;
     long updatedTime = 0L;
 
-    long startTime;
+    long startTime = 0L;
 
     private TableLayout mainTable;
     private UpdateCardsHandler handler;
@@ -225,8 +225,7 @@ public class Manager extends Activity {
         loadCards();
 
         ((TextView) findViewById(R.id.tv1)).setText("Tries: " + turns);
-        ((TextView)findViewById(R.id.timerValue)).setText("00:00:00");
-        startTime = System.currentTimeMillis();
+        ((TextView) findViewById(R.id.timerValue)).setText("00:00:00");
     }
 
     private void gameOver() {
@@ -415,12 +414,12 @@ public class Manager extends Activity {
                 firstCard.button.setVisibility(View.INVISIBLE);
                 secondCard.button.setVisibility(View.INVISIBLE);
                 pairsMatched++;
-                if (pairsMatched == totalPairs)
-                {
+                if (pairsMatched == totalPairs) {
                     customHandler.removeCallbacks(updateTimerThread);
-                    saveScore(new Score("", "" + COL_COUNT + " x " + ROW_COUNT, (int)updatedTime, turns));
+                    saveScore(new Score("", "" + COL_COUNT + " x " + ROW_COUNT, (int) updatedTime, turns));
                     gameOver();
                 }
+            } else {
                 if (currentApiVersion < 16) {
                     secondCard.button.setBackgroundDrawable(backImage);
                     firstCard.button.setBackgroundDrawable(backImage);
