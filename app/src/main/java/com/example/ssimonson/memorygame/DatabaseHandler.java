@@ -93,15 +93,37 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
     public List<Score> getAllScores() {
-        return getAllScores("size, tries");
+        return getAllScores(null, null);
     }
-    public List<Score> getAllScores(String orderBy) {
+    public List<Score> getAllScores(String size, String orderBy) {
         List<Score> scoreList = new ArrayList<Score>();
+        if(orderBy == null) {
+            orderBy = "tries";
+        }
+
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_SCORES + " ORDER BY " + orderBy;
+        String selectQuery = "SELECT  * FROM " + TABLE_SCORES;
+        if(size != null) {
+            selectQuery += " WHERE size= ?'";
+        }
+        selectQuery+=" ORDER BY ?";
+
+        String[] params = new String[]{size, orderBy};
 
         SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        //Cursor cursor = db.rawQuery(selectQuery, params, null);
+
+        String[] tableColumns = new String[]{
+                "column1",
+                "(SELECT max(column1) FROM table2) AS max"
+        };
+        String whereClause = "size = ?";
+        String[] whereArgs = new String[]{
+                size
+        };
+        //String orderBy = "column1";
+        Cursor cursor = db.query(TABLE_SCORES, null, whereClause, whereArgs,
+                null, null, orderBy);
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
