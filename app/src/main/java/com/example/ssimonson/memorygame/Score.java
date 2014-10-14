@@ -10,6 +10,7 @@ public class Score {
     private int _id;
     private String _name;
     private String _size;
+    private String _theme;
     private int _time;
     private int _tries;
 
@@ -19,18 +20,20 @@ public class Score {
     }
 
     // constructor
-    public Score(int id, String name, String size, int time, int tries) {
+    public Score(int id, String name, String size, String theme, int time, int tries) {
         this._id = id;
         this._name = name;
         this._size = size;
+        this._theme = theme;
         this._time = time;
         this._tries = tries;
     }
 
     // constructor
-    public Score(String name, String size, int time, int tries) {
+    public Score(String name, String size, String theme, int time, int tries) {
         this._name = name;
         this._size = size;
+        this._theme = theme;
         this._time = time;
         this._tries = tries;
     }
@@ -57,6 +60,14 @@ public class Score {
 
     public void set_size(String size) {
         this._size = size;
+    }
+
+    public String getTheme() {
+        return this._theme;
+    }
+
+    public void set_theme(String theme) {
+        this._theme = theme;
     }
 
     public int getTime() {
