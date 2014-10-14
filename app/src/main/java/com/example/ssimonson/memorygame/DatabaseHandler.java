@@ -26,7 +26,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Database Name
     private static final String DATABASE_NAME = "memoryGame";
@@ -37,6 +37,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_ID = "id";
     private static final String KEY_NAME = "name";
     private static final String KEY_SIZE = "size";
+    private static final String KEY_THEME = "theme";
     private static final String KEY_TIME = "time";
     private static final String KEY_TRIES = "tries";
 
@@ -48,8 +49,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String CREATE_CONTACTS_TABLE = "CREATE TABLE " + TABLE_SCORES + "("
-                + KEY_ID + " INTEGER PRIMARY KEY," + KEY_NAME + " TEXT,"
-                + KEY_SIZE + " TEXT," + KEY_TIME + " INT," + KEY_TRIES + " INT" + ")";
+                + KEY_ID + " INTEGER PRIMARY KEY,"
+                + KEY_NAME + " TEXT,"
+                + KEY_SIZE + " TEXT,"
+                + KEY_THEME + " TEXT,"
+                + KEY_TIME + " INT,"
+                + KEY_TRIES + " INT" + ")";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
 
@@ -72,6 +77,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_SIZE, score.getSize());
         values.put(KEY_TIME, score.getTime());
         values.put(KEY_TRIES, score.getTries());
+        values.put(KEY_THEME, score.getTheme());
 
         // Inserting Row
         db.insert(TABLE_SCORES, null, values);
@@ -82,58 +88,64 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(TABLE_SCORES, new String[] { KEY_ID,
-                        KEY_NAME, KEY_SIZE, KEY_TIME, KEY_TRIES }, KEY_ID + "=?",
+                        KEY_NAME, KEY_SIZE, KEY_THEME, KEY_TIME, KEY_TRIES }, KEY_ID + "=?",
                 new String[] { String.valueOf(id) }, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
 
-        Score score = new Score(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1), cursor.getString(2), cursor.getInt(3), cursor.getInt(4));
+        Score score = new Score(cursor.getInt(cursor.getColumnIndex(KEY_ID)),
+                cursor.getString(cursor.getColumnIndex(KEY_NAME)),
+                cursor.getString(cursor.getColumnIndex(KEY_SIZE)),
+                cursor.getString(cursor.getColumnIndex(KEY_THEME)),
+                cursor.getInt(cursor.getColumnIndex(KEY_TIME)),
+                cursor.getInt(cursor.getColumnIndex(KEY_TRIES)));
         return score;
     }
 
     public List<Score> getAllScores() {
-        return getAllScores(null, null);
+        return getAllScores(null, null, null);
     }
-    public List<Score> getAllScores(String size, String orderBy) {
+    public List<Score> getAllScores(String size, String theme, String orderBy) {
         List<Score> scoreList = new ArrayList<Score>();
         if(orderBy == null) {
             orderBy = "tries";
         }
 
-        // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_SCORES;
-        if(size != null) {
-            selectQuery += " WHERE size= ?'";
-        }
-        selectQuery+=" ORDER BY ?";
 
-        String[] params = new String[]{size, orderBy};
+        String[] tableColumns = new String[]{KEY_ID, KEY_NAME, KEY_SIZE, KEY_THEME, KEY_TIME, KEY_TRIES};
+        String whereClause = "";
+        ArrayList<String> whereArgs = new ArrayList<String>();
+        if (size != null) {
+            whereClause += "size = ?";
+            whereArgs.add(size);
+        }
+        if (theme != null) {
+            if (whereClause.length() > 0) {
+                whereClause += " AND ";
+            }
+            whereClause += "theme = ?";
+            whereArgs.add(theme.toLowerCase());
+        }
 
         SQLiteDatabase db = this.getWritableDatabase();
-        //Cursor cursor = db.rawQuery(selectQuery, params, null);
-
-        String[] tableColumns = new String[]{
-                "column1",
-                "(SELECT max(column1) FROM table2) AS max"
-        };
-        String whereClause = "size = ?";
-        String[] whereArgs = new String[]{
-                size
-        };
-        //String orderBy = "column1";
-        Cursor cursor = db.query(TABLE_SCORES, null, whereClause, whereArgs,
-                null, null, orderBy);
+        Cursor cursor = db.query(TABLE_SCORES,
+                tableColumns,
+                whereClause,
+                whereArgs.toArray(new String[whereArgs.size()]),
+                null,
+                null,
+                orderBy);
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
                 Score score = new Score();
-                score.setID(Integer.parseInt(cursor.getString(0)));
-                score.setName(cursor.getString(1));
-                score.set_size(cursor.getString(2));
-                score.set_time(cursor.getInt(3));
-                score.set_tries(cursor.getInt(4));
+                score.setID(cursor.getInt(cursor.getColumnIndex(KEY_ID)));
+                score.setName(cursor.getString(cursor.getColumnIndex(KEY_NAME)));
+                score.set_size(cursor.getString(cursor.getColumnIndex(KEY_SIZE)));
+                score.set_theme(cursor.getString(cursor.getColumnIndex(KEY_THEME)));
+                score.set_time(cursor.getInt(cursor.getColumnIndex(KEY_TIME)));
+                score.set_tries(cursor.getInt(cursor.getColumnIndex(KEY_TRIES)));
                 // Adding contact to list
                 scoreList.add(score);
             } while (cursor.moveToNext());

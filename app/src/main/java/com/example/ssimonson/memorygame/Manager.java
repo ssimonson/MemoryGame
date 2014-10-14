@@ -184,7 +184,7 @@ public class Manager extends Activity {
     }
 
     private void gameOver() {
-        ((TextView) findViewById(R.id.tv1)).setText("You completed the " + COL_COUNT + " x " + ROW_COUNT + " game in " + formatTime(updatedTime) + " and " + Integer.toString(turns) + " turns");
+        ((TextView) findViewById(R.id.tv1)).setText("You completed the " + COL_COUNT + " x " + ROW_COUNT + " '" + theme + "' game in " + formatTime(updatedTime) + " and " + Integer.toString(turns) + " turns");
         ((TextView) findViewById(R.id.timerValue)).setText("");
 
         final EditText input = new EditText(this);
@@ -195,7 +195,7 @@ public class Manager extends Activity {
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         String name = input.getText().toString();
-                        saveScore(new Score(name, "" + COL_COUNT + " X " + ROW_COUNT, (int) updatedTime, turns));
+                        saveScore(new Score(name, "" + COL_COUNT + " X " + ROW_COUNT, theme, (int) updatedTime, turns));
                     }
                 }).show();
     }
