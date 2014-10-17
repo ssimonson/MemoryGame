@@ -61,13 +61,13 @@ public class HighScores extends Activity {
                 tllp.bottomMargin = 10;
 
                 tl.setLayoutParams(tllp);
-                //tl.addView(createHighScoreRow("Name", "Turns", "Time"));
-                tl.addView(createHighScoreRow("Name", "Turns", "Time", "Size", "Theme"));
+                tl.addView(createHighScoreRow("Name", "Turns", "Time"));
+                //tl.addView(createHighScoreRow("Name", "Turns", "Time", "Size", "Theme"));
 
                 for (int i = 0; i < scores.size(); i++) {
                     Score score = scores.get(i);
-                    //tl.addView(createHighScoreRow(score.getName(), score.getTries(), score.getTime()));
-                    tl.addView(createHighScoreRow(score.getName(), score.getTries(), score.getTime(), score.getSize(), score.getTheme()));
+                    tl.addView(createHighScoreRow(score.getName(), score.getTries(), score.getTime()));
+                    //tl.addView(createHighScoreRow(score.getName(), score.getTries(), score.getTime(), score.getSize(), score.getTheme()));
                 }
                 highScoreList.addView(tl);
             }
